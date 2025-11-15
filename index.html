@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>إدارة مصاريف منزل - تصميم مهندس بولس سمير</title>
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <style>
+    body{
+      background: radial-gradient(circle at top, #4da9ff 0, #141b2b 45%, #0b141f 100%);
+      min-height:100vh;
+      font-family: "Cairo", Arial, sans-serif;
+    }
+
+    .top-title{
+      text-align:center;
+      color:#f9fbff;
+      padding-top:18px;
+    }
+    .top-title h1{
+      font-size:1.55rem;
+      letter-spacing:.5px;
+      margin-bottom:2px;
+    }
+    .top-title small{
+      font-size:.9rem;
+      color:#9fd0ff;
+    }
+
+    .card-main{
+      margin:22px auto 32px;
+      max-width:460px;
+      padding:22px 20px 26px;
+      border-radius:20px;
+      background:#ffffff;
+      box-shadow:0 16px 40px rgba(0,0,0,.6);
+      position:relative;
+      animation:cardIn .7s ease;
+    }
+    @keyframes cardIn{
+      0%{opacity:0;transform:translateY(35px) scale(.95);}
+      100%{opacity:1;transform:none;}
+    }
+
+    .admin-btn{
+      position:fixed;
+      left:18px;
+      top:18px;
+      z-index:30;
+      border:none;
+      border-radius:50%;
+      background:linear-gradient(135deg,#1c6dd0,#00c6ff);
+      color:#fff;
+      padding:11px 12px;
+      box-shadow:0 10px 24px rgba(0,0,0,.45);
+      cursor:pointer;
+      transition:.2s;
+    }
+    .admin-btn i{
+      font-size:1.55rem;
+    }
+    .admin-btn:hover{
+      transform:scale(1.1) rotate(10deg);
+      background:linear-gradient(135deg,#ffc857,#ff7a18);
+    }
+
+    .logo-mini{
+      text-align:center;
+      margin-bottom:4px;
+    }
+    .logo-mini i{
+      font-size:2.1rem;
+      color:#1c6dd0;
+      animation:spinIn .9s ease-out;
+    }
+    @keyframes spinIn{
+      0%{transform:scale(.2) rotate(-120deg);opacity:0;}
+      80%{transform:scale(1.1) rotate(15deg);opacity:1;}
+      100%{transform:none;}
+    }
+
+    h2.app-title{
+      text-align:center;
+      color:#1d4b73;
+      font-weight:700;
+      font-size:1.35rem;
+      margin-bottom:8px;
+    }
+
+    /* كرات/بطاقات الإحصائيات للفئات */
+    .cat-summary{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      justify-content:center;
+      margin-bottom:10px;
+    }
+    .cat-pill{
+      flex:0 0 31%;
+      min-width:110px;
+      background:var(--bg);
+      color:#fff;
+      border-radius:18px;
+      padding:8px 8px 7px;
+      text-align:center;
+      cursor:pointer;
+      box-shadow:0 6px 18px rgba(0,0,0,.25);
+      transform:translateY(0);
+      transition:.2s ease;
+      font-size:.8rem;
+      position:relative;
+      overflow:hidden;
+    }
+    .cat-pill::after{
+      content:"";
+      position:absolute;
+      width:80px;
+      height:80px;
+      border-radius:50%;
+      background:rgba(255,255,255,.18);
+      right:-20px;
+      top:-35px;
+      transition:.3s;
+    }
+    .cat-pill:hover{
+      transform:translateY(-4px) scale(1.03);
+      box-shadow:0 10px 26px rgba(0,0,0,.35);
+    }
+    .cat-pill:hover::after{
+      transform:translate(-10px,10px);
+    }
+    .cat-pill i{
+      font-size:1.2rem;
+      display:block;
+      margin-bottom:2px;
+    }
+    .cat-pill .name{
+      font-weight:600;
+      letter-spacing:.4px;
+    }
+    .cat-pill .remain{
+      font-size:.78rem;
+    }
+
+    .summary-bar{
+      display:flex;
+      gap:7px;
+      justify-content:center;
+      margin-top:4px;
+      margin-bottom:10px;
+    }
+    .summary-chip{
+      flex:1;
+      background:#f5f8ff;
+      border-radius:999px;
+      padding:5px 10px;
+      font-size:.85rem;
+      color:#123455;
+      text-align:center;
+      box-shadow:0 2px 8px rgba(0,0,0,.08);
+    }
+    .summary-chip span{
+      font-weight:bold;
+      font-size:.9rem;
+      color:#1c6dd0;
+    }
+
+    .expense-form label{
+      font-size:.82rem;
+      color:#333;
+    }
+    .expense-form input,
+    .expense-form select{
+      border-radius:10px;
+      background:#f6f9ff;
+    }
+    .expense-form button{
+      border-radius:999px;
+    }
+    .btn-add{
+      background:linear-gradient(135deg,#1c6dd0,#00c6ff);
+      border:none;
+    }
+    .btn-add:hover{
+      background:linear-gradient(135deg,#00c6ff,#1c6dd0);
+    }
+    .btn-clear{
+      background:linear-gradient(135deg,#ff5f6d,#ffc371);
+      border:none;
+    }
+
+    .table-responsive{
+      margin-top:14px;
+      max-height:260px;
+      overflow-y:auto;
+    }
+    table thead{
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    table thead th{
+      background:#f1f4ff;
+      font-size:.8rem;
+    }
+    table tbody td{
+      font-size:.82rem;
+    }
+
+    .modal-admin .modal-content,
+    .modal-cat .modal-content{
+      border-radius:18px;
+    }
+    .modal-cat .modal-header{
+      border-bottom:none;
+    }
+    .modal.modal-zoom .modal-dialog{
+      transition:transform .25s ease-out;
+      transform:scale(.85);
+    }
+    .modal.modal-zoom.show .modal-dialog{
+      transform:scale(1);
+    }
+  </style>
+</head>
+<body>
+
+<!-- عنوان علوي -->
+<div class="top-title">
+  <h1>إدارة مصاريف منزل</h1>
+  <small>تصميم مهندس بولس سمير</small>
+</div>
+
+<!-- زر الأدمن -->
+<button class="admin-btn" id="show-admin" title="إدارة الفئات">
+  <i class="bi bi-gear-fill"></i>
+</button>
+
+<div class="container">
+  <div class="card-main">
+    <div class="logo-mini">
+      <i class="bi bi-wallet2"></i>
+    </div>
+    <h2 class="app-title">مصروفات الأسرة الشهرية</h2>
+
+    <!-- كرات الفئات -->
+    <div class="cat-summary" id="cat-summary"></div>
+
+    <!-- شريط ملخص إجمالي -->
+    <div class="summary-bar">
+      <div class="summary-chip">إجمالي الكل: <span id="total-all">0</span></div>
+      <div class="summary-chip">اليوم: <span id="total-today">0</span></div>
+      <div class="summary-chip">الشهر: <span id="total-month">0</span></div>
+    </div>
+
+    <!-- فورم المصروفات -->
+    <form class="expense-form row g-2" id="expense-form" autocomplete="off">
+      <div class="col-6">
+        <label>المبلغ (جنيه)</label>
+        <input type="number" class="form-control" id="amount" min="1" step="1" required>
+      </div>
+      <div class="col-6">
+        <label>الفئة</label>
+        <select class="form-select" id="category" required></select>
+      </div>
+      <div class="col-12">
+        <label>ملاحظة</label>
+        <input type="text" class="form-control" id="note" placeholder="مثال: سوبر ماركت">
+      </div>
+      <div class="col-6">
+        <label>التاريخ</label>
+        <input type="date" class="form-control" id="date">
+      </div>
+      <div class="col-6 d-grid gap-2">
+        <button type="submit" class="btn btn-primary btn-add">إضافة <i class="bi bi-plus-lg"></i></button>
+        <button type="button" class="btn btn-clear" id="clear-all">مسح الكل <i class="bi bi-trash"></i></button>
+      </div>
+    </form>
+
+    <!-- جدول المصروفات -->
+    <div class="table-responsive">
+      <table class="table table-striped table-sm align-middle">
+        <thead>
+          <tr>
+            <th>#</th><th>التاريخ</th><th>الفئة</th><th>المبلغ</th><th>ملاحظة</th><th>باقي الفئة</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="expense-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal إدارة الفئات -->
+<div class="modal fade modal-admin modal-zoom" id="modalAdmin" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-gear"></i> إدارة الفئات</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form class="row g-2 mb-2" id="cat-form">
+          <div class="col-6">
+            <input type="text" class="form-control" id="cat-name" placeholder="اسم الفئة" required>
+          </div>
+          <div class="col-6">
+            <input type="number" class="form-control" id="cat-limit" placeholder="حد الشهر" min="1" step="1" required>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-success w-100">إضافة/تعديل</button>
+          </div>
+        </form>
+        <table class="table table-bordered table-sm mb-2">
+          <thead><tr><th>الفئة</th><th>الحد</th><th>تعديل</th><th>حذف</th></tr></thead>
+          <tbody id="cat-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal تفاصيل الفئة -->
+<div class="modal fade modal-cat modal-zoom" id="modalCategoryDetails" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="catDetailsTitle"></h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-sm table-striped align-middle mb-0">
+          <thead>
+            <tr>
+              <th>#</th><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th>
+            </tr>
+          </thead>
+          <tbody id="cat-details-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyBpluD0hZBWgkVTEn4vQ7jJ06fbQlrtn6s",
+  authDomain: "masrof-8eba3.firebaseapp.com",
+  databaseURL: "https://masrof-8eba3-default-rtdb.firebaseio.com",
+  projectId: "masrof-8eba3",
+  storageBucket: "masrof-8eba3.firebasestorage.app",
+  messagingSenderId: "1086971695124",
+  appId: "1:1086971695124:web:d78d3c1246be26413b5701",
+  measurementId: "G-970945X4ZF"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let categories = [];
+let expenses = [];
+
+const colorMap = [
+  "linear-gradient(135deg,#ff7a18,#af002d)",
+  "linear-gradient(135deg,#00c6ff,#0072ff)",
+  "linear-gradient(135deg,#34e89e,#0f3443)",
+  "linear-gradient(135deg,#f7971e,#ffd200)",
+  "linear-gradient(135deg,#c471ed,#f64f59)",
+  "linear-gradient(135deg,#36d1dc,#5b86e5)",
+  "linear-gradient(135deg,#ff512f,#dd2476)",
+  "linear-gradient(135deg,#11998e,#38ef7d)"
+];
+
+const iconMap = {
+  "بقالة":"bi-cart4",
+  "إيجار":"bi-house-door",
+  "فواتير":"bi-receipt",
+  "مواصلات":"bi-truck",
+  "تعليم":"bi-journal-bookmark",
+  "صحة":"bi-heart-pulse",
+  "ترفيه":"bi-balloon-heart",
+  "أخرى":"bi-dots"
+};
+
+async function updateCats(){
+  const snap = await db.ref("categories").get();
+  categories = snap.val() ? Object.values(snap.val()) : [];
+  renderCatOptions();
+  renderCatSummary();
+  renderCatAdmin();
+}
+
+async function updateExps(){
+  const snap = await db.ref("expenses").get();
+  expenses = snap.val() ? Object.entries(snap.val()).map(([id,v])=>({...v,id})) : [];
+  renderTable();
+  renderCatSummary();
+}
+
+async function addCategory(name, limit){
+  await db.ref("categories/"+name).set({name, limit: parseInt(limit)});
+}
+async function removeCategory(name){
+  await db.ref("categories/"+name).remove();
+}
+async function addExpense(obj){
+  const newKey = db.ref("expenses").push().key;
+  await db.ref("expenses/"+newKey).set(obj);
+}
+async function removeExpense(id){
+  await db.ref("expenses/"+id).remove();
+}
+
+function todayISO(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+
+function catLimit(catName){
+  const c = categories.find(x=>x.name===catName);
+  return c ? parseInt(c.limit) : null;
+}
+
+function spentOfCat(catName, month){
+  const m = month || todayISO().slice(0,7);
+  return expenses
+    .filter(e=>e.category===catName && e.date && e.date.slice(0,7)===m)
+    .reduce((s,e)=>s + parseInt(e.amount || 0), 0);
+}
+
+function catRemaining(catName){
+  const lim = catLimit(catName);
+  if(lim == null) return null;
+  return lim - spentOfCat(catName);
+}
+
+function renderCatOptions(){
+  const sel = document.getElementById("category");
+  sel.innerHTML = '<option value="">اختر فئة</option>';
+  categories.forEach(c=>{
+    sel.innerHTML += `<option>${c.name}</option>`;
+  });
+}
+
+function renderCatSummary(){
+  const parent = document.getElementById("cat-summary");
+  parent.innerHTML = "";
+  categories.forEach((cat,index)=>{
+    const rest = catRemaining(cat.name);
+    const bg = colorMap[index % colorMap.length];
+    const icon = iconMap[cat.name] || iconMap["أخرى"];
+    const over = rest < 0;
+    parent.innerHTML += `
+      <div class="cat-pill"
+           style="--bg:${bg}"
+           data-cat="${cat.name}">
+        <i class="bi ${icon}"></i>
+        <div class="name">${cat.name}</div>
+        <div class="remain ${over?'text-warning':''}">
+          ${over? 'تجاوز الحد!' : 'باقي: ' + parseInt(rest).toString()}
+        </div>
+      </div>
+    `;
+  });
+
+  document.querySelectorAll(".cat-pill").forEach(pill=>{
+    pill.addEventListener("click",()=>{
+      const catName = pill.dataset.cat;
+      openCategoryDetails(catName);
+    });
+  });
+}
+
+function renderTable(){
+  const tbody = document.getElementById("expense-body");
+  tbody.innerHTML = "";
+  expenses.forEach((exp,index)=>{
+    const rem = catRemaining(exp.category);
+    const over = rem < 0;
+    tbody.innerHTML += `
+      <tr>
+        <td>${index+1}</td>
+        <td>${exp.date || "-"}</td>
+        <td>${exp.category}</td>
+        <td>${parseInt(exp.amount).toString()}</td>
+        <td>${exp.note || ""}</td>
+        <td class="${over?'text-danger fw-bold':'text-success'}">
+          ${over ? 'تجاوز!' : 'باقي: ' + parseInt(rem).toString()}
+        </td>
+        <td>
+          <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${exp.id}">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+  updateSummary();
+}
+
+function summaryVal(filterFn){
+  return expenses
+    .filter(filterFn)
+    .reduce((s,e)=>s + parseInt(e.amount || 0), 0);
+}
+
+function updateSummary(){
+  const today = todayISO();
+  document.getElementById("total-all").textContent =
+    summaryVal(()=>true).toString();
+  document.getElementById("total-today").textContent =
+    summaryVal(e=>e.date===today).toString();
+  document.getElementById("total-month").textContent =
+    summaryVal(e=>e.date && e.date.slice(0,7)===today.slice(0,7)).toString();
+}
+
+function renderCatAdmin(){
+  const tbody = document.getElementById("cat-body");
+  tbody.innerHTML = "";
+  categories.forEach(cat=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${cat.name}</td>
+        <td>${parseInt(cat.limit).toString()}</td>
+        <td><button class="btn btn-warning btn-sm" onclick="editCat('${cat.name}')">
+          <i class="bi bi-pencil"></i></button>
+        </td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteCat('${cat.name}')">
+          <i class="bi bi-trash"></i></button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+window.editCat = function(name){
+  const c = categories.find(x=>x.name===name);
+  if(!c) return;
+  document.getElementById("cat-name").value = c.name;
+  document.getElementById("cat-limit").value = parseInt(c.limit);
+  document.getElementById("cat-form").dataset.edit = c.name;
+};
+
+window.deleteCat = async function(name){
+  if(confirm("حذف الفئة بكل بياناتها؟")){
+    await removeCategory(name);
+    await updateCats();
+    await updateExps();
+    document.getElementById("cat-form").reset();
+    delete document.getElementById("cat-form").dataset.edit;
+  }
+};
+
+function openCategoryDetails(catName){
+  const modal = new bootstrap.Modal(document.getElementById("modalCategoryDetails"));
+  document.getElementById("catDetailsTitle").textContent = "تفاصيل فئة: " + catName;
+  const body = document.getElementById("cat-details-body");
+  body.innerHTML = "";
+  const filtered = expenses.filter(e=>e.category===catName);
+  filtered.forEach((e,idx)=>{
+    body.innerHTML += `
+      <tr>
+        <td>${idx+1}</td>
+        <td>${e.date || "-"}</td>
+        <td>${parseInt(e.amount).toString()}</td>
+        <td>${e.note || ""}</td>
+      </tr>
+    `;
+  });
+  modal.show();
+}
+
+document.getElementById("cat-form").onsubmit = async function(e){
+  e.preventDefault();
+  const name = document.getElementById("cat-name").value.trim();
+  const limit = parseInt(document.getElementById("cat-limit").value);
+  if(!name || !limit || limit <= 0){
+    alert("أدخل اسم فئة وحد صحيح");
+    return;
+  }
+  await addCategory(name, limit);
+  await updateCats();
+  this.reset();
+  delete this.dataset.edit;
+};
+
+document.getElementById("show-admin").onclick = function(){
+  new bootstrap.Modal(document.getElementById("modalAdmin")).show();
+  renderCatAdmin();
+};
+
+document.getElementById("expense-form").onsubmit = async function(e){
+  e.preventDefault();
+  const amount = parseInt(document.getElementById("amount").value);
+  const category = document.getElementById("category").value;
+  const note = document.getElementById("note").value.trim();
+  const date = document.getElementById("date").value || todayISO();
+
+  if(!amount || amount <= 0 || !category){
+    alert("أدخل مبلغ صحيح وحدد فئة");
+    return;
+  }
+
+  const rem = catRemaining(category);
+  if(rem !== null && amount > rem){
+    if(!confirm("تجاوز للحد المحدد للفئة، هل تريد المتابعة؟")) return;
+  }
+
+  await addExpense({amount, category, note, date});
+  this.reset();
+  document.getElementById("date").value = todayISO();
+  await updateExps();
+};
+
+document.getElementById("expense-body").onclick = async function(e){
+  const btn = e.target.closest(".delete-btn");
+  if(btn){
+    const id = btn.dataset.id;
+    if(confirm("حذف هذا المصروف؟")){
+      await removeExpense(id);
+      await updateExps();
+    }
+  }
+};
+
+document.getElementById("clear-all").onclick = async function(){
+  if(expenses.length === 0){
+    alert("لا توجد بيانات لمسحها");
+    return;
+  }
+  if(confirm("مسح كل المصروفات؟ لا يمكن التراجع.")){
+    for(const ex of expenses){
+      await removeExpense(ex.id);
+    }
+    await updateExps();
+  }
+};
+
+window.onload = function(){
+  document.getElementById("date").value = todayISO();
+  updateCats();
+  updateExps();
+};
+</script>
+</body>
+</html>
