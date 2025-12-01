@@ -194,27 +194,27 @@
             box-shadow: 0 4px 15px rgba(67, 97, 238, 0.2);
         }
         
-        /* Small Stats Balls - Compact */
+        /* Small Stats Balls - Compact with Better Text */
         .stats-balls-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 15px;
             margin-bottom: 25px;
         }
         
         .stat-ball-small {
             position: relative;
-            height: 90px;
+            height: 140px;
             border-radius: var(--border-radius);
-            padding: 12px;
+            padding: 15px;
             color: white;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
         }
         
         .stat-ball-small::before {
@@ -228,55 +228,80 @@
         }
         
         .stat-ball-small:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
         
         .stat-ball-content-small {
             position: relative;
             z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         
         .stat-ball-header {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         
         .stat-ball-icon-small {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             opacity: 0.9;
+            margin-left: 10px;
         }
         
         .stat-ball-title-small {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 700;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            line-height: 1.2;
+            flex: 1;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .stat-ball-info {
+            margin-top: auto;
         }
         
         .stat-ball-amount-small {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: 800;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+        
+        .stat-ball-limit {
+            font-size: 0.8rem;
+            opacity: 0.9;
             margin-bottom: 3px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            text-align: center;
+            background: rgba(0,0,0,0.15);
+            padding: 3px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            width: 100%;
         }
         
         .stat-ball-remaining-small {
-            font-size: 0.7rem;
-            opacity: 0.9;
-            background: rgba(0,0,0,0.15);
-            padding: 2px 8px;
-            border-radius: 10px;
-            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            opacity: 0.95;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 10px;
+            border-radius: 12px;
+            display: block;
+            text-align: center;
+            margin-top: 5px;
+            backdrop-filter: blur(5px);
         }
         
         .stat-ball-small.warning .stat-ball-remaining-small {
             color: #ffcccc;
-            background: rgba(255,0,0,0.25);
+            background: rgba(255,0,0,0.3);
             animation: pulseWarning 1.5s infinite;
         }
         
@@ -1015,17 +1040,21 @@
             }
             
             .stats-balls-container {
-                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
                 gap: 10px;
             }
             
             .stat-ball-small {
-                height: 80px;
-                padding: 10px;
+                height: 130px;
+                padding: 12px;
+            }
+            
+            .stat-ball-title-small {
+                font-size: 0.8rem;
             }
             
             .stat-ball-amount-small {
-                font-size: 1rem;
+                font-size: 1.2rem;
             }
             
             .budget-summary, .category-list, .stats-cards, .archive-list {
@@ -1919,7 +1948,7 @@
             });
         }
         
-        // عرض الكرات الإحصائية الصغيرة لكل الفئات
+        // عرض الكرات الإحصائية الصغيرة لكل الفئات مع نص واضح
         function renderStatsBalls() {
             statsBallsContainer.innerHTML = '';
             
@@ -1957,8 +1986,11 @@
                                 <i class="${iconClass}"></i>
                             </div>
                         </div>
-                        <div class="stat-ball-amount-small">${category.limit.toLocaleString()} ج.م</div>
-                        <div class="stat-ball-remaining-small">متبقي: ${remaining.toLocaleString()} ج.م</div>
+                        <div class="stat-ball-info">
+                            <div class="stat-ball-amount-small">${category.limit.toLocaleString()} ج.م</div>
+                            <div class="stat-ball-limit">الحد المسموح</div>
+                            <div class="stat-ball-remaining-small">متبقي: ${remaining.toLocaleString()} ج.م</div>
+                        </div>
                     </div>
                 `;
                 
